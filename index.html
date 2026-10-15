@@ -77,7 +77,7 @@ function renderCategoryDetails(id,includeManifestationExtras=false){
  let rowsToRender=g.rows;
  if(g.id==='materiais')rowsToRender=g.rows.filter(row=>!['Revólver','Pistola','Fuzil','Simulacro'].includes(row.name));
  if(g.id==='diversas'){
-  const orderByYear={'2024':['Manifestações','Apreensão de drogas','Furto','Roubo','Conduta inconveniente','Perturbação do trabalho e sossego','Furto/Dano','Discriminação/Preconceito','Cumprimento de mandado','Rixa','Adquirir/distribuir derivados de petróleo'],'2025':['Manifestações','Apreensão de drogas','Roubo','Furto','Cumprimento de mandado','Apreensão de simulacro','Apreensão de material','Averiguação de pessoa','Vias de fato'],'2026':['Manifestações','Roubo','Furto','Averiguação de pessoa','Vias de fato','Fato atípico','Lesão corporal','Posse e uso','Tráfico']};
+  const orderByYear={'2024':['Manifestações','Apreensão de drogas','Furto','Roubo','Conduta inconveniente','Perturbação do trabalho e sossego','Furto/Dano','Discriminação/Preconceito','Cumprimento de mandado','Rixa','Adquirir/distribuir derivados de petróleo'],'2025':['Manifestações','Apreensão de drogas','Roubo','Furto','Cumprimento de mandado','Apreensão de simulacro','Apreensão de material','Averiguação de pessoa','Vias de fato'],'2026':['Manifestações','Posse e uso','Roubo','Averiguação de pessoa','Vias de fato','Furto','Fato atípico','Lesão corporal','Tráfico']};
   const totalRow=g.rows.find(r=>r.name==='Total de ocorrências diversas');
   rowsToRender=g.rows.filter(r=>r===totalRow||(r.values[yearEl.value]!==undefined&&r.values[yearEl.value]!==null&&r.values[yearEl.value]!==''));
   const order=orderByYear[yearEl.value]||[];
