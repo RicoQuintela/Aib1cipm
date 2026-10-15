@@ -99,7 +99,7 @@ function renderCategoryDetails(id,includeManifestationExtras=false){
  }else{
   const hasExistingTotal=rowsToRender.some(r=>/^Total(?:\s|$)/i.test(r.name));
   const hasData=rowsToRender.some(r=>hasYearData(r.values[yearEl.value]));
-  const showPercent=g.id==='diversas'&&(yearEl.value==='2025'||yearEl.value==='2026');
+  const showPercent=g.id==='diversas'&&(yearEl.value==='2024'||yearEl.value==='2025'||yearEl.value==='2026');
   const percentBase=showPercent?rowsToRender.filter(r=>!/^Total(?:\s|$)/i.test(r.name)).reduce((sum,r)=>sum+numericSumFromValue(r.values[yearEl.value]),0):0;
   const percentText=r=>{const isTotal=/^Total(?:\s|$)/i.test(r.name);const value=isTotal?100:(percentBase?numericSumFromValue(r.values[yearEl.value])/percentBase*100:0);return `${new Intl.NumberFormat('pt-BR',{minimumFractionDigits:2,maximumFractionDigits:2}).format(value)}%`};
   let totalValue='—';
