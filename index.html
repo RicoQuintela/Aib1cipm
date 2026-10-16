@@ -95,11 +95,11 @@ function renderCategoryDetails(id,includeManifestationExtras=false){
   const isManual2026=yearEl.value==='2026';
   const manualCounts=isManual2026?{Maconha:'5*',Haxixe:'2*',Crack:'1'}:{};
   const manualTotal=isManual2026?'6*':null;
-  const displayCount=value=>String(value).replace(/\*/g,'<span class="reference-number">*</span>');
+  const displayCount=value=>`<span class="reference-number">${value}</span>`;
   const countTotal=g.rows.reduce((sum,r)=>sum+Number(r.occurrences[yearEl.value]??0),0);
   const gramsTotal=g.rows.reduce((sum,r)=>sum+numericSumFromValue(r.values[yearEl.value]||''),0);
   const totalLine=`<tr class="total-row"><td>Total</td><td class="val">${hasData?(manualTotal?displayCount(manualTotal):formatTotalNumber(countTotal)):'—'}</td><td class="val">${hasData?`${formatTotalNumber(gramsTotal)} g`:'—'}</td></tr>`;
-  table=`<div class="tablewrap"><table class="datatable drug-detail-table"><thead><tr><th>Substância</th><th>Ocorrências</th><th>Quantidade</th></tr></thead><tbody>${g.rows.map(r=>{const v=r.values[yearEl.value];const occurrence=manualCounts[r.name]??(r.occurrences[yearEl.value]??0);return `<tr><td>${r.name}</td><td class="val">${isManual2026?displayCount(occurrence):occurrence}</td><td class="val ${!v?'empty':''}">${v?emphasizeNumbers(v):'—'}</td></tr>`}).join('')}${totalLine}</tbody></table></div>`;
+  table=`<div class="tablewrap"><table class="datatable drug-detail-table"><thead><tr><th>Substância</th><th>Ocorrências</th><th>Quantidade</th></tr></thead><tbody>${g.rows.map(r=>{const v=r.values[yearEl.value];const occurrence=manualCounts[r.name]??(r.occurrences[yearEl.value]??0);return `<tr><td>${r.name}</td><td class="val">${isManual2026&&manualCounts[r.name]!==undefined?displayCount(occurrence):occurrence}</td><td class="val ${!v?'empty':''}">${v?emphasizeNumbers(v):'—'}</td></tr>`}).join('')}${totalLine}</tbody></table></div>`;
   if(isManual2026)table+=`<div style="color:#008CFF;font-weight:700;font-size:12px;text-align:left;margin-top:8px">* Indica ocorrência conjunta.</div>`;
  }else{
   const hasExistingTotal=rowsToRender.some(r=>/^Total(?:\s|$)/i.test(r.name));
