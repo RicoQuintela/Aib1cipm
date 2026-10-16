@@ -93,7 +93,7 @@ function renderCategoryDetails(id,includeManifestationExtras=false){
  }else if(g.id==='drogas'){
   const hasData=g.rows.some(r=>hasYearData(r.values[yearEl.value]));
   const isManual2026=yearEl.value==='2026';
-  const manualCounts=isManual2026?{Maconha:'5*',Haxixe:'2*',Crack:'1'}:{};
+  const manualCounts=isManual2026?{Maconha:'5*',Cocaína:'0',Haxixe:'2*',Crack:'1'}:{};
   const manualTotal=isManual2026?'6*':null;
   const displayCount=value=>`<span class="reference-number">${value}</span>`;const displayTotal=value=>`<span style="color:#d71920!important;font-weight:900">${value}</span>`;
   const countTotal=g.rows.reduce((sum,r)=>sum+Number(r.occurrences[yearEl.value]??0),0);
