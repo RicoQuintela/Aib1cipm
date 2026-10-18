@@ -114,6 +114,7 @@ function renderCategoryDetails(id,includeManifestationExtras=false){
  const g=DATA.find(x=>x.id===id);if(!g)return;document.body.classList.toggle('manifestations-overview-2024-open',g.id==='manifestacoes'&&!includeManifestationExtras&&yearEl.value==='2024');document.body.classList.toggle('manifestations-footer-2024-open',g.id==='manifestacoes'&&includeManifestationExtras&&yearEl.value==='2024');document.body.classList.toggle('diversas-2025-open',g.id==='diversas'&&yearEl.value==='2025');document.body.classList.toggle('diversas-2026-open',g.id==='diversas'&&yearEl.value==='2026');
  const detailTitle=document.getElementById('detailTitle');detailTitle.textContent=g.id==='drogas'?'Apreensão de drogas':g.title;document.getElementById('drugTotalGeneralLabel').textContent=g.id==='drogas'?'Total geral:':'';
  document.getElementById('detailYear').innerHTML=`<span class="reference-number">${yearEl.value}</span>`;
+ let percentHundredths=new Map();
  let rowsToRender=g.rows;
  if(g.id==='materiais')rowsToRender=g.rows.filter(row=>!['Revólver','Pistola','Fuzil','Simulacro'].includes(row.name));
  if(g.id==='diversas'){
@@ -121,8 +122,25 @@ function renderCategoryDetails(id,includeManifestationExtras=false){
   const totalRow=g.rows.find(r=>r.name==='Total de ocorrências diversas');
   const dataRows=g.rows.filter(r=>r!==totalRow&&r.values[year]!==undefined&&r.values[year]!==null&&r.values[year]!=='');
   const percentBase=year==='2024'&&totalRow?numericSumFromValue(totalRow.values[year]):dataRows.reduce((sum,r)=>sum+numericSumFromValue(r.values[year]),0);
-  const percentage=r=>percentBase?numericSumFromValue(r.values[year])/percentBase*100:0;
-  dataRows.sort((a,b)=>percentage(b)-percentage(a));
+  const initialUnits=dataRows.map(r=>percentBase?Math.round(numericSumFromValue(r.values[year])/percentBase*10000):0);
+  const roundedTotal=initialUnits.reduce((sum,value)=>sum+value,0);
+  const difference=roundedTotal-10000;
+  if(roundedTotal>0){
+   const correction=Math.abs(difference);
+   const eligible=dataRows.map((row,index)=>({index,quantity:numericSumFromValue(row.values[year])})).filter(item=>item.quantity>1).map(item=>item.index);
+   const eligibleWeight=eligible.reduce((sum,index)=>sum+initialUnits[index],0);
+   const corrections=initialUnits.map(()=>0);
+   if(correction>0&&eligibleWeight>0){
+    eligible.forEach(index=>{corrections[index]=Math.floor(correction*initialUnits[index]/eligibleWeight+1e-9)});
+    const remainders=initialUnits.map((value,index)=>eligible.includes(index)?correction*value/eligibleWeight-corrections[index]:-1);
+    let unallocated=correction-corrections.reduce((sum,value)=>sum+value,0);
+    const correctionOrder=eligible.slice().sort((a,b)=>remainders[b]-remainders[a]||initialUnits[b]-initialUnits[a]||a-b);
+    for(let i=0;i<unallocated;i++)corrections[correctionOrder[i]]++;
+   }
+   dataRows.forEach((row,index)=>percentHundredths.set(row,initialUnits[index]+(difference>0?-corrections[index]:corrections[index])));
+  }
+  // Ajuste proporcional dos centésimos: os maiores percentuais absorvem a maior parcela do excesso.
+  dataRows.sort((a,b)=>(percentHundredths.get(b)||0)-(percentHundredths.get(a)||0));
   rowsToRender=[...dataRows,...(totalRow?[totalRow]:[])];
  }
  let table='';
@@ -146,9 +164,8 @@ function renderCategoryDetails(id,includeManifestationExtras=false){
  }else{
   const hasExistingTotal=rowsToRender.some(r=>/^Total(?:\s|$)/i.test(r.name));
   const hasData=rowsToRender.some(r=>hasYearData(r.values[yearEl.value]));
-  const showPercent=g.id==='diversas'&&(yearEl.value==='2024'||yearEl.value==='2025'||yearEl.value==='2026');
-  const manualTotalRow=rowsToRender.find(r=>/^Total(?:\s|$)/i.test(r.name));const percentBase=showPercent?(g.id==='diversas'&&yearEl.value==='2024'&&manualTotalRow?numericSumFromValue(manualTotalRow.values[yearEl.value]):rowsToRender.filter(r=>!/^Total(?:\s|$)/i.test(r.name)).reduce((sum,r)=>sum+numericSumFromValue(r.values[yearEl.value]),0)):0;
-  const percentText=r=>{const isTotal=/^Total(?:\s|$)/i.test(r.name);const value=isTotal?100:(percentBase?numericSumFromValue(r.values[yearEl.value])/percentBase*100:0);return `${new Intl.NumberFormat('pt-BR',{minimumFractionDigits:2,maximumFractionDigits:2}).format(value)}%`};
+  const showPercent=g.id==='diversas'&&percentHundredths.size>0;
+  const percentText=r=>{const isTotal=/^Total(?:\s|$)/i.test(r.name);const valueHundredths=isTotal?10000:(percentHundredths.get(r)||0);return `${new Intl.NumberFormat('pt-BR',{minimumFractionDigits:2,maximumFractionDigits:2}).format(valueHundredths/100)}%`};
   let totalValue='—';
   if(hasData){
    if(g.id==='materiais'){
