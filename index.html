@@ -77,11 +77,13 @@ function renderCategoryDetails(id,includeManifestationExtras=false){
  let rowsToRender=g.rows;
  if(g.id==='materiais')rowsToRender=g.rows.filter(row=>!['Revólver','Pistola','Fuzil','Simulacro'].includes(row.name));
  if(g.id==='diversas'){
-  const orderByYear={'2024':['Manifestações','Apreensão de drogas','Furto','Roubo','Conduta inconveniente','Perturbação do trabalho e sossego','Furto/Dano','Discriminação/Preconceito','Cumprimento de mandado','Rixa','Adquirir/distribuir derivados de petróleo','Atrito verbal'],'2025':['Manifestações','Apreensão de drogas','Roubo','Furto','Cumprimento de mandado','Apreensão de simulacro','Apreensão de material','Averiguação de pessoa','Vias de fato'],'2026':['Manifestações','Posse e uso','Roubo','Averiguação de pessoa','Vias de fato','Furto','Fato atípico','Lesão corporal','Tráfico']};
+  const year=yearEl.value;
   const totalRow=g.rows.find(r=>r.name==='Total de ocorrências diversas');
-  rowsToRender=g.rows.filter(r=>r===totalRow||(r.values[yearEl.value]!==undefined&&r.values[yearEl.value]!==null&&r.values[yearEl.value]!==''));
-  const order=orderByYear[yearEl.value]||[];
-  rowsToRender=[...rowsToRender.filter(r=>r!==totalRow).sort((a,b)=>{const ai=order.indexOf(a.name),bi=order.indexOf(b.name);return (ai<0?999:ai)-(bi<0?999:bi)}),...(totalRow?[totalRow]:[])];
+  const dataRows=g.rows.filter(r=>r!==totalRow&&r.values[year]!==undefined&&r.values[year]!==null&&r.values[year]!=='');
+  const percentBase=year==='2024'&&totalRow?numericSumFromValue(totalRow.values[year]):dataRows.reduce((sum,r)=>sum+numericSumFromValue(r.values[year]),0);
+  const percentage=r=>percentBase?numericSumFromValue(r.values[year])/percentBase*100:0;
+  dataRows.sort((a,b)=>percentage(b)-percentage(a));
+  rowsToRender=[...dataRows,...(totalRow?[totalRow]:[])];
  }
  let table='';
  if(g.kind==='location'){
